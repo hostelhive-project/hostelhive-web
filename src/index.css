@@ -172,8 +172,6 @@ a { text-underline-offset: 3px; }
 .workspace-sidebar nav a:hover:not([aria-current="page"]) { color: var(--hh-ink); background: #f3f6f8; }
 .workspace-sidebar .locked-nav-link { color: #9aa5b4 !important; cursor: not-allowed; }
 .workspace-sidebar .sidebar-account { flex-shrink: 0; border-top: 1px solid var(--hh-border-soft); padding-top: 14px; }
-.workspace-sidebar .logout-button { justify-content: flex-start; min-height: 38px; border-radius: 7px; padding: 8px 10px; color: #56657a; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: 0; }
-.workspace-sidebar .logout-button:hover { color: #9d303b; background: #fff3f3; }
 .workspace-main { min-width: 0; padding-left: 248px; transition: padding-left var(--hh-motion); }
 .workspace-shell.is-collapsed .workspace-main { padding-left: 76px; }
 .workspace-mobile-header { display: none; }
@@ -201,7 +199,6 @@ a { text-underline-offset: 3px; }
 .account-profile { display: flex; align-items: center; gap: 10px; min-height: 45px; padding: 5px 6px; border-radius: 7px; color: inherit; text-decoration: none; }
 .account-menu-wrap { position: relative; }
 .account-profile { width: 100%; border: 0; background: transparent; text-align: left; cursor: pointer; }
-.account-profile:hover { background: #f4f6f8; }
 .account-menu-chevron { width: 14px; height: 14px; margin-left: auto; color: #738198; }
 .account-menu { position: absolute; z-index: 5; right: 0; bottom: calc(100% + 7px); left: 0; padding: 5px; border: 1px solid #dce3eb; border-radius: 8px; background: #fff; box-shadow: var(--hh-shadow-popover); }
 .account-menu > a, .account-menu > button { display: flex; align-items: center; gap: 9px; width: 100%; min-height: 37px; padding: 7px 9px; border: 0; border-radius: 5px; color: #3e5068; background: transparent; text-align: left; text-decoration: none; font-size: 12px; font-weight: 550; }
@@ -678,7 +675,7 @@ a { text-underline-offset: 3px; }
   .hostel-save-actions button { width: 100%; min-height: 48px; justify-content: center; }
   .banner-image-actions { gap: 8px; }
   .banner-image-actions > div { display: flex; flex-wrap: wrap; }
-  .admin-profile-card, .workspace-page .bg-white.rounded-2xl { min-width: 0; }
+  .workspace-page .bg-white.rounded-2xl { min-width: 0; }
   .workspace-page .grid.grid-cols-1.lg\:grid-cols-12 { grid-template-columns: minmax(0, 1fr); }
   .workspace-page .lg\:col-span-8, .workspace-page .lg\:col-span-7, .workspace-page .lg\:col-span-5, .workspace-page .lg\:col-span-2 { grid-column: auto; min-width: 0; }
   .workspace-page .bg-white.rounded-2xl.border { max-width: 100%; }

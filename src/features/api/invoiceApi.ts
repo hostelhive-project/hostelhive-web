@@ -17,20 +17,6 @@ export const invoiceApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Invoice' as const, id: 'LIST' }],
     }),
-    getInvoiceById: builder.query<Invoice, string>({
-      query: (id) => ({
-        url: `/invoices/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (_result, _error, id) => [{ type: 'Invoice', id }],
-    }),
-    listInvoicesForBooking: builder.query<Invoice[], string>({
-      query: (bookingId) => ({
-        url: `/invoices/booking/${bookingId}`,
-        method: 'GET',
-      }),
-      providesTags: [{ type: 'Invoice' as const, id: 'LIST' }],
-    }),
     markInvoicePaid: builder.mutation<Invoice, string>({
       query: (id) => ({
         url: `/invoices/${id}/mark-paid`,
@@ -71,8 +57,6 @@ export const invoiceApi = baseApi.injectEndpoints({
 
 export const {
   useListInvoicesForHostelQuery,
-  useGetInvoiceByIdQuery,
-  useListInvoicesForBookingQuery,
   useMarkInvoicePaidMutation,
   useGenerateInvoiceForBookingMutation,
   useGenerateAllInvoicesMutation,

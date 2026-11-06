@@ -22,13 +22,6 @@ export const complaintApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Complaint' as const, id: 'LIST' }],
     }),
-    getComplaintById: builder.query<Complaint, string>({
-      query: (id) => ({
-        url: `/complaints/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (_result, _error, id) => [{ type: 'Complaint', id }],
-    }),
     assignComplaint: builder.mutation<Complaint, { id: string; staffId: string }>({
       query: ({ id, staffId }) => ({
         url: `/complaints/${id}/assign`,
@@ -56,7 +49,6 @@ export const complaintApi = baseApi.injectEndpoints({
 
 export const {
   useListComplaintsQuery,
-  useGetComplaintByIdQuery,
   useAssignComplaintMutation,
   useUpdateComplaintStatusMutation,
 } = complaintApi;

@@ -20,13 +20,6 @@ export const roomApi = baseApi.injectEndpoints({
             ]
           : [{ type: 'Room' as const, id: 'LIST' }],
     }),
-    getRoomById: builder.query<Room, string>({
-      query: (id) => ({
-        url: `/rooms/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (_result, _error, id) => [{ type: 'Room', id }],
-    }),
     createRoom: builder.mutation<Room, { hostelId: string; data: CreateRoomPayload }>({
       query: ({ hostelId, data }) => ({
         url: `/hostels/${hostelId}/rooms`,
@@ -34,18 +27,6 @@ export const roomApi = baseApi.injectEndpoints({
         data,
       }),
       invalidatesTags: [{ type: 'Room', id: 'LIST' }, 'DashboardSummary'],
-    }),
-    updateRoom: builder.mutation<Room, { id: string; data: Partial<Room> }>({
-      query: ({ id, data }) => ({
-        url: `/rooms/${id}`,
-        method: 'PUT',
-        data,
-      }),
-      invalidatesTags: (_result, _error, { id }) => [
-        { type: 'Room', id },
-        { type: 'Room', id: 'LIST' },
-        'DashboardSummary',
-      ],
     }),
     updateRoomStatus: builder.mutation<Room, { id: string; data: UpdateRoomStatusPayload }>({
       query: ({ id, data }) => ({
@@ -71,9 +52,7 @@ export const roomApi = baseApi.injectEndpoints({
 
 export const {
   useListRoomsQuery,
-  useGetRoomByIdQuery,
   useCreateRoomMutation,
-  useUpdateRoomMutation,
   useUpdateRoomStatusMutation,
   useDeleteRoomMutation,
 } = roomApi;

@@ -229,6 +229,23 @@ export interface Complaint {
 export type TaskType = 'Routine' | 'DeepClean' | 'Emergency';
 export type TaskStatus = 'Scheduled' | 'InProgress' | 'Completed' | 'Delayed';
 
+export interface CleaningAssessment {
+  status: 'Pending' | 'Processing' | 'Assessed' | 'ManualReview' | 'Unavailable';
+  score: number | null;
+  breakdown?: { waste: number | null; floor: number | null; surfaces: number | null; tidiness: number | null } | null;
+  estimated?: boolean;
+  imageQuality?: 'Good' | 'Limited' | 'Unusable' | null;
+  evidenceCoverage?: number | null;
+  comparison?: 'Improved' | 'Similar' | 'Worse' | 'Unclear';
+  summary?: string;
+  improvements?: string[];
+  issues?: string[];
+  limitations?: string[];
+  reason?: string | null;
+  model?: string;
+  assessedAt?: string | null;
+}
+
 export interface CleaningTask {
   _id: string;
   roomId: Room;
@@ -243,6 +260,7 @@ export interface CleaningTask {
   afterImageUri?: string | null;
   uiStatusBadgeColor?: string;
   delayReason?: string | null;
+  cleaningAssessment?: CleaningAssessment;
   createdAt: string;
   updatedAt: string;
 }
@@ -318,11 +336,4 @@ export interface BlockchainVerifyResponse {
   snapshotMatches?: boolean | null;
   onChainVerified?: boolean;
   verificationState?: 'Verified' | 'Simulated' | 'Pending' | 'Unavailable' | 'Mismatch';
-}
-
-export interface ApiResponse<T = any> {
-  success: boolean;
-  message?: string;
-  data: T;
-  details?: any;
 }

@@ -4,7 +4,6 @@ import type {
   LoginPayload,
   RegisterPayload,
   RegistrationPendingResponse,
-  User,
 } from '../../types/api';
 
 export const authApi = baseApi.injectEndpoints({
@@ -67,20 +66,6 @@ export const authApi = baseApi.injectEndpoints({
         method: 'POST',
       }),
     }),
-    getCurrentUser: builder.query<User, void>({
-      query: () => ({
-        url: '/auth/me',
-        method: 'GET',
-      }),
-      providesTags: ['User'],
-    }),
-    refreshToken: builder.mutation<{ accessToken: string; refreshToken?: string }, { refreshToken: string }>({
-      query: (body) => ({
-        url: '/auth/refresh',
-        method: 'POST',
-        data: body,
-      }),
-    }),
   }),
 });
 
@@ -88,8 +73,6 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,
-  useGetCurrentUserQuery,
-  useRefreshTokenMutation,
   useVerifyEmailMutation,
   useResendVerificationMutation,
   useRequestPasswordResetMutation,

@@ -22,6 +22,7 @@ import {
   X
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import CleaningAssessmentPanel, { CleaningAssessmentBadge } from '../components/CleaningAssessment';
 import Toast from '../components/Toast';
 import type { ToastMessage } from '../components/Toast';
 import { PageSpinner, ErrorBanner, EmptyState } from '../components/Feedback';
@@ -29,6 +30,7 @@ import { PageHeader, ResponsiveTable } from '../components/responsive/Responsive
 import { useAppSelector } from '../store/hooks';
 import {
   useListCleaningTasksForHostelQuery,
+  useGetCleaningTaskByIdQuery,
   useAssignCleaningTaskMutation,
   useGetCleaningDirectiveQuery,
   useBroadcastCleaningDirectiveMutation,
@@ -136,7 +138,20 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
   const [invitationEmail, setInvitationEmail] = useState('');
   const [invitationToCancel, setInvitationToCancel] = useState<User | null>(null);
   const [selectedDelayedTask, setSelectedDelayedTask] = useState<CleaningTask | null>(null);
-  const [selectedDetailTask, setSelectedDetailTask] = useState<CleaningTask | null>(null);
+  const [selectedTaskSnapshot, setSelectedDetailTask] = useState<CleaningTask | null>(null);
+  const { currentData: freshDetailTask, isFetching: isDetailFetching, isError: isDetailError, refetch: refetchDetail } = useGetCleaningTaskByIdQuery(selectedTaskSnapshot?._id || '', {
+    skip: !selectedTaskSnapshot,
+    pollingInterval: selectedTaskSnapshot ? 10000 : 0,
+    skipPollingIfUnfocused: true,
+    refetchOnMountOrArgChange: true,
+  });
+  const selectedDetailTask = freshDetailTask || selectedTaskSnapshot;
+  const hasPendingAssessments = tasks.some((task) => ['Pending', 'Processing'].includes(task.cleaningAssessment?.status || ''));
+  useEffect(() => {
+    if (!hasPendingAssessments || !hostelId || staffOnly) return;
+    const timer = window.setInterval(() => { if (document.visibilityState === 'visible') void refetch(); }, 10000);
+    return () => window.clearInterval(timer);
+  }, [hasPendingAssessments, hostelId, staffOnly, refetch]);
   const [previewImage, setPreviewImage] = useState<{ url: string; title: string } | null>(null);
   const [toasts, setToasts] = useState<ToastMessage[]>([]);
   const [isExporting, setIsExporting] = useState(false);
@@ -613,9 +628,10 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
                         </td>
                         <td data-label="Status" data-card-status="true" className="py-4 px-6 text-right">
                           {task.status === 'Completed' && (
-                            <span className="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
-                              COMPLETED
-                            </span>
+                            <div className="flex flex-col items-end gap-2">
+                              <span className="px-2 py-0.5 text-[9px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">COMPLETED</span>
+                              <CleaningAssessmentBadge assessment={task.cleaningAssessment} />
+                            </div>
                           )}
                           {task.status === 'InProgress' && (
                             <span className="px-2 py-0.5 text-[9px] font-extrabold bg-amber-50 text-amber-700 border border-amber-200 rounded">
@@ -1440,6 +1456,12 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
             </div>
 
             {/* 5. Proof of Work (Before & After Photos) */}
+            {selectedDetailTask.status === 'Completed' && (
+              <div className="space-y-2">
+                {isDetailError && <p role="alert" className="text-xs text-amber-700">Could not refresh this task. Showing the last available details.</p>}
+                <CleaningAssessmentPanel assessment={selectedDetailTask.cleaningAssessment} onRefresh={() => { void refetchDetail(); }} refreshing={isDetailFetching} />
+              </div>
+            )}
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1">

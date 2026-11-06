@@ -3,19 +3,6 @@ import type { Booking } from '../../types/api';
 
 export const bookingApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    listBookingsForHostel: builder.query<Booking[], string>({
-      query: (hostelId) => ({
-        url: `/bookings/hostel/${hostelId}`,
-        method: 'GET',
-      }),
-      providesTags: (result) =>
-        result
-          ? [
-              ...result.map(({ _id }) => ({ type: 'Booking' as const, id: _id })),
-              { type: 'Booking' as const, id: 'LIST' },
-            ]
-          : [{ type: 'Booking' as const, id: 'LIST' }],
-    }),
     listPendingBookings: builder.query<Booking[], string>({
       query: (hostelId) => ({
         url: `/bookings/hostel/${hostelId}/pending`,
@@ -36,13 +23,6 @@ export const bookingApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
       providesTags: [{ type: 'Booking' as const, id: 'LIST' }],
-    }),
-    getBookingById: builder.query<Booking, string>({
-      query: (id) => ({
-        url: `/bookings/${id}`,
-        method: 'GET',
-      }),
-      providesTags: (_result, _error, id) => [{ type: 'Booking', id }],
     }),
     approveBooking: builder.mutation<Booking, string>({
       query: (id) => ({
@@ -94,11 +74,9 @@ export const bookingApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useListBookingsForHostelQuery,
   useListPendingBookingsQuery,
   useListApprovedBookingsQuery,
   useListResidentsForHostelQuery,
-  useGetBookingByIdQuery,
   useApproveBookingMutation,
   useRejectBookingMutation,
   useCheckInBookingMutation,

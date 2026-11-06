@@ -13,6 +13,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import Modal from '../components/Modal';
+import InvoiceBlockchainAudit from '../components/InvoiceBlockchainAudit';
 import Toast from '../components/Toast';
 import type { ToastMessage } from '../components/Toast';
 import { PageSpinner, ErrorBanner, EmptyState } from '../components/Feedback';
@@ -642,6 +643,8 @@ export default function RentLedgerPage() {
                 <span>Rs. {showReceiptModal.totalDue.toLocaleString()}</span>
               </div>
             </div>
+
+            <InvoiceBlockchainAudit key={showReceiptModal._id} invoiceId={showReceiptModal._id} />
 
             <div className="flex justify-end gap-2 pt-2">
               <button

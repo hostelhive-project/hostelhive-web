@@ -18,7 +18,7 @@ export const legalDocuments = {
       },
       {
         "heading": "Services that process information",
-        "body": "Depending on deployment configuration, Stripe processes card checkout and connected-hostel payouts; ImageKit stores uploaded images; the configured email provider delivers verification and reset codes; Firebase delivers device notifications; and Groq processes assistant requests with relevant conversation and hostel context. The application database stores service records. These providers may process data in other countries under their own terms and security practices. Card details are entered on Stripe checkout rather than stored as card numbers in HostelHive."
+        "body": "Depending on deployment configuration, Stripe processes card checkout and connected-hostel payouts; ImageKit stores uploaded images; the configured email provider delivers verification and reset codes; Firebase delivers device notifications; and Groq processes assistant requests with relevant conversation and hostel context. When cleaning photo assessment is enabled, Groq also processes staff-uploaded before and after cleaning photos to estimate visible cleanliness; this is advisory and the administrator makes the final decision. Avoid including faces or personal documents in cleaning photos. The application database stores service records. These providers may process data in other countries under their own terms and security practices. Card details are entered on Stripe checkout rather than stored as card numbers in HostelHive."
       },
       {
         "heading": "Blockchain audit records",
