@@ -2,6 +2,15 @@
 
 Prepared 7 November 2026 for the existing React/TypeScript/Vite SPA. Backend and mobile deployment are separate. Adding these files locally does not create a Vercel project, publish the site, change GitHub settings or connect an account.
 
+## Initial deployment status (7 November 2026)
+
+- The UI is deployed at **https://hostelhive-web.vercel.app** in the existing **Abu Hurar's projects** Hobby workspace, project `hostelhive-web`.
+- Initial production deployment: `dpl_G95pz5AY3yxoddki7VCGgnLngSLa`, source commit `eaf1cfd`, status `READY`. Vercel ran the locked install, lint, TypeScript and Vite build successfully.
+- Anonymous HTTP checks returned 200 with the SPA shell for `/`, `/login`, `/register`, `/rooms` and `/admin/stripe/complete`. The JavaScript asset returned 200 and contains the intended temporary API setting. These are hosting/routing checks, not authenticated browser journeys.
+- Production and Preview currently use `VITE_API_BASE_URL=https://unconfigured-api.invalid/api`; backend-dependent features are unavailable until Render is deployed and this variable is replaced followed by a rebuild.
+- The **Web checks** GitHub Deployment Check is configured to block production alias assignment, with a 20-minute deadline. GitHub auto-deployment is still pending repository access: Vercel rejected the attempted connection to `hostelhive-project/hostelhive-web`. Grant the Vercel GitHub app access in the repository owner's account/organization, then connect that repository to this existing Vercel project with production branch `main`.
+- Build output reported the existing large main chunk and npm audit findings (10 moderate, 5 high). Dependency remediation and end-to-end API verification are not claimed by this deployment.
+
 ## First deployment
 
 1. Commit and push the web changes, including `.github/workflows/web-ci.yml`, `vercel.json`, `.vercelignore` and the lint fixes, to this repository's `main` branch. Do not commit `.env`.
