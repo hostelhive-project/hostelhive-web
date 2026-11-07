@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef, useLayoutEffect } from 'react';
+import { getRequestError } from '../utils/requestError';
+import { useState, useEffect, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
@@ -87,19 +88,17 @@ export default function HostelRegistrationPage() {
   const [activeTab, setActiveTab] = useState<TabKey>(
     ['property', 'images', 'amenities', 'chatbot', 'payouts', 'review'].includes(initialTab) ? initialTab : 'property'
   );
-  const appliedTabParam = useRef(searchParams.get('tab'));
-
-  useEffect(() => {
-    const tabParam = searchParams.get('tab') as TabKey | null;
+  const [appliedTabParam, setAppliedTabParam] = useState(searchParams.get('tab'));
+  const tabParam = searchParams.get('tab') as TabKey | null;
+  if (appliedTabParam !== tabParam) {
     // Creating a draft must not reapply the old URL tab over the next setup step.
-    if (appliedTabParam.current === tabParam) return;
-    appliedTabParam.current = tabParam;
+    setAppliedTabParam(tabParam);
     if (tabParam && ['property', 'images', 'amenities', 'chatbot', 'payouts', 'review'].includes(tabParam) && (user?.hostelId || !['chatbot', 'payouts'].includes(tabParam))) {
       setActiveTab(tabParam);
     } else if (!user?.hostelId && ['chatbot', 'payouts'].includes(tabParam || '')) {
       setActiveTab('property');
     }
-  }, [searchParams, user?.hostelId]);
+  }
 
   const {
     data: existingHostel,
@@ -182,12 +181,13 @@ export default function HostelRegistrationPage() {
   const chatbotSnapshot = JSON.stringify([wifiPassword, emergencyContact, emergencyCountry.code, additionalInfo]);
   const [savedProperty, setSavedProperty] = useState(propertySnapshot);
   const [savedChatbot, setSavedChatbot] = useState(chatbotSnapshot);
-  const hydratedProperty = useRef<string | null>(null);
-  const hydratedChatbot = useRef<string | null>(null);
-  const propertyHydrating = useRef(false);
-  useLayoutEffect(() => {
-    if (propertyHydrating.current) { propertyHydrating.current = false; setSavedProperty(propertySnapshot); }
-  });
+  const [hydratedProperty, setHydratedProperty] = useState<string | null>(null);
+  const [hydratedChatbot, setHydratedChatbot] = useState<string | null>(null);
+  const [propertyHydrating, setPropertyHydrating] = useState(false);
+  if (propertyHydrating) {
+    setPropertyHydrating(false);
+    setSavedProperty(propertySnapshot);
+  }
   const propertyDirty = propertySnapshot !== savedProperty;
   const chatbotDirty = chatbotSnapshot !== savedChatbot;
   const savedPropertyValues = JSON.parse(savedProperty) as [string, string, number, typeof amenities, string, string[]];
@@ -210,10 +210,9 @@ export default function HostelRegistrationPage() {
   const { leaveDialog, allowNavigation } = useUnsavedChanges(propertyDirty || chatbotDirty);
 
   // Sync existing hostel details into form
-  useEffect(() => {
-    if (existingHostel && hydratedProperty.current !== existingHostel._id) {
-      hydratedProperty.current = existingHostel._id;
-      propertyHydrating.current = true;
+    if (existingHostel && hydratedProperty !== existingHostel._id) {
+      setHydratedProperty(existingHostel._id);
+      setPropertyHydrating(true);
       setHostelName(existingHostel.name);
       setLocation(existingHostel.location);
       if (existingHostel.priceTier !== undefined) setPriceTier(existingHostel.priceTier);
@@ -270,18 +269,16 @@ export default function HostelRegistrationPage() {
         setGalleryImages([]);
       }
     }
-  }, [existingHostel]);
 
   // Hydrate this record once; later query updates must not replace draft input.
-  useEffect(() => {
-    if (!chatbotInfo || hydratedChatbot.current === hostelId) return;
-    hydratedChatbot.current = hostelId;
+  if (chatbotInfo && hydratedChatbot !== hostelId) {
+    setHydratedChatbot(hostelId);
     const parsed = parseExistingPhone(chatbotInfo.emergencyContact || '');
     const wifi = chatbotInfo.wifiPassword || '';
     const notes = chatbotInfo.additionalInfo || '';
     setWifiPassword(wifi); setEmergencyCountry(parsed.country); setEmergencyContact(parsed.nationalNumber); setAdditionalInfo(notes);
     setSavedChatbot(JSON.stringify([wifi, parsed.nationalNumber, parsed.country.code, notes]));
-  }, [chatbotInfo, hostelId]);
+  }
 
   const addToast = (type: 'success' | 'error' | 'info', message: string) => {
     setToasts((prev) => [...prev, { id: Date.now().toString(), type, message }]);
@@ -339,7 +336,8 @@ export default function HostelRegistrationPage() {
         setBannerImage(res.url);
         addToast('success', 'Hostel banner uploaded to ImageKit successfully!');
       }
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to upload banner to ImageKit.');
     } finally {
       e.target.value = '';
@@ -397,7 +395,8 @@ export default function HostelRegistrationPage() {
         setGalleryImages((prev) => [...prev, ...res.urls].slice(0, MAX_GALLERY_IMAGES));
         addToast('success', `Uploaded ${res.urls.length} photo${res.urls.length > 1 ? 's' : ''} to ImageKit successfully!`);
       }
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to upload gallery photos to ImageKit.');
     } finally {
       e.target.value = '';
@@ -492,14 +491,15 @@ export default function HostelRegistrationPage() {
           propertyInfo: propertyInfoPayload,
         }).unwrap();
 
-        hydratedProperty.current = created._id;
+        setHydratedProperty(created._id);
         dispatch(updateCurrentUser({ hostelId: created._id }));
         setActiveTab('images');
         addToast('success', 'Draft saved. Complete the remaining sections, then review and publish.');
       }
       setSavedProperty(propertySnapshot);
       return true;
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to save property.');
     }
   };
@@ -537,7 +537,8 @@ export default function HostelRegistrationPage() {
       setSavedChatbot(chatbotSnapshot);
       addToast('success', 'AI chatbot knowledge updated.');
       return true;
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Could not update chatbot knowledge.');
     }
   };
@@ -557,7 +558,8 @@ export default function HostelRegistrationPage() {
       if (chatbotDirty && !await handleSaveChatbotInfo()) return;
       await publishHostel(hostelId).unwrap();
       setShowSuccessModal(true);
-    } catch (error: any) { addToast('error', error?.data?.message || 'Unable to publish your listing.'); }
+    } catch (caughtError: unknown) {
+      const error = getRequestError(caughtError); addToast('error', error?.data?.message || 'Unable to publish your listing.'); }
     finally { setupOperation.current = false; setIsAdvancingSetup(false); }
   };
 
@@ -622,7 +624,8 @@ export default function HostelRegistrationPage() {
     try {
       const result = await triggerStripeOnboard(hostelId).unwrap();
       if (result?.url) window.location.href = result.url;
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Could not open Stripe onboarding.');
     }
   };

@@ -137,6 +137,9 @@ export interface Booking {
   _id: string;
   studentId: User;
   roomId: Room;
+  // Legacy populated aliases are still supported by the existing views.
+  student?: User;
+  room?: Room;
   status: BookingStatus;
   bookingDate?: string;
   emergencyContact?: string;

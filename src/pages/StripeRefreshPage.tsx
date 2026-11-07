@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 /**
  * StripeRefreshPage — /admin/stripe/refresh
  *
@@ -89,7 +90,7 @@ export default function StripeRefreshPage() {
             <h1 className="text-lg font-bold text-[#0b1329]">Onboarding Link Failed</h1>
             <p className="text-xs text-slate-500 leading-relaxed">
               {errorMessage ||
-                (error as any)?.data?.message ||
+                getRequestError(error)?.data?.message ||
                 'We could not generate a fresh Stripe onboarding link. Please try again from Payout Settings.'}
             </p>
             <div className="pt-2 space-y-3">

@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 import { Link } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
@@ -173,7 +174,7 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
   const [selectedRoomId, setSelectedRoomId] = useState('');
   const [selectedStaffId, setSelectedStaffId] = useState('');
   const [taskType, setTaskType] = useState<TaskType>('Routine');
-  const [scheduledTime, setScheduledTime] = useState(
+  const [scheduledTime, setScheduledTime] = useState(() =>
     new Date(Date.now() + 3600 * 1000).toISOString().slice(0, 16)
   );
 
@@ -278,7 +279,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
             `Broadcast to ${res.recipientCount} cleaning staff member${res.recipientCount > 1 ? 's' : ''}.`
         );
       }
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to broadcast directive.');
     }
   };
@@ -300,7 +302,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       setSelectedStaffId('');
       setTaskType('Routine');
       addToast('success', 'Cleaning task scheduled and dispatched to staff.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to schedule task.');
     }
   };
@@ -334,7 +337,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       setStaffCountry(DEFAULT_COUNTRY);
       setStaffPhoneError(null);
       addToast('success', `Invitation sent to ${staffEmail.trim()}. They can verify their email and set a password in the mobile app.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to enroll staff member.');
     }
   };
@@ -375,7 +379,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       }).unwrap();
       setSelectedStaff(null);
       addToast('success', 'Staff details updated successfully.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to update staff details.');
     }
   };
@@ -387,7 +392,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       const removedName = staffToDelete.name;
       setStaffToDelete(null);
       addToast('success', `${removedName} was removed from your staff list.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to remove staff member.');
     }
   };
@@ -410,7 +416,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       setInvitationToEdit(null);
       setInvitationEmail('');
       addToast('success', `Invitation updated. A new code was sent to ${correctedEmail}.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to update the invitation email.');
     }
   };
@@ -419,7 +426,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
     try {
       await resendStaffInvitationMutation(invitation._id).unwrap();
       addToast('success', `A new verification code was sent to ${invitation.email}.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Could not resend the invitation code.');
     }
   };
@@ -431,7 +439,8 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
       const cancelledName = invitationToCancel.name;
       setInvitationToCancel(null);
       addToast('success', `Invitation for ${cancelledName} was cancelled.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to cancel the invitation.');
     }
   };
@@ -533,7 +542,7 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
 
       {isError && (
         <ErrorBanner
-          message={(error as any)?.message || 'Failed to load cleaning schedule.'}
+          message={getRequestError(error)?.message || 'Failed to load cleaning schedule.'}
           onRetry={refetch}
         />
       )}
@@ -557,7 +566,7 @@ export default function CleaningSchedulePage({ staffOnly = false }: { staffOnly?
                 <span className="text-xs text-slate-400 font-semibold">Filter:</span>
                 <select
                   value={statusFilter}
-                  onChange={(e) => setStatusFilter(e.target.value as any)}
+                  onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                   className="px-2.5 py-1 text-xs font-semibold bg-slate-50 border border-slate-200 rounded-xl text-slate-700 focus:outline-none"
                 >
                   <option value="ALL">All Tasks</option>

@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 import { useState, useMemo, useEffect } from 'react';
 import { 
   Search, 
@@ -88,8 +89,8 @@ export default function ResidentsPage() {
   // Filtered bookings list (all are active CheckedIn residents)
   const filteredResidents = useMemo(() => {
     return bookings.filter((b) => {
-      const student = b.studentId || (b as any).student;
-      const room = b.roomId || (b as any).room;
+      const student = b.studentId || b.student;
+      const room = b.roomId || b.room;
       const studentName = student?.name || '';
       const residentId = student?.residentCode || b.residentCode || '';
       const roomNum = room?.roomNumber || '';
@@ -108,7 +109,7 @@ export default function ResidentsPage() {
   const occupiedRoomsCount = useMemo(() => {
     const set = new Set();
     bookings.forEach((b) => {
-      const room = b.roomId || (b as any).room;
+      const room = b.roomId || b.room;
       if (room?._id) set.add(room._id);
     });
     return set.size;
@@ -136,11 +137,12 @@ export default function ResidentsPage() {
     try {
       const updatedBooking = await checkInBookingMutation(checkInTarget._id).unwrap();
       const name = checkInTarget.studentId?.name || 'Student';
-      const assignedId = (updatedBooking as any)?.studentId?.residentCode || (updatedBooking as any)?.residentCode;
+      const assignedId = updatedBooking?.studentId?.residentCode || updatedBooking?.residentCode;
       setCheckInTarget(null);
       const idMsg = assignedId ? ` Resident ID: ${assignedId}.` : '';
       addToast('success', `${name} has been checked in successfully.${idMsg}`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to check in resident.');
     }
   };
@@ -149,11 +151,12 @@ export default function ResidentsPage() {
     if (!checkoutTarget) return;
     try {
       await checkOutBookingMutation(checkoutTarget._id).unwrap();
-      const student = checkoutTarget.studentId || (checkoutTarget as any).student;
+      const student = checkoutTarget.studentId || checkoutTarget.student;
       const name = student?.name || 'Resident';
       setCheckoutTarget(null);
       addToast('success', `${name} has been checked out successfully. Allocated bed released.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to check out resident.');
     }
   };
@@ -197,13 +200,13 @@ export default function ResidentsPage() {
 
         {isError && (
           <ErrorBanner
-            message={(error as any)?.message || 'Failed to load residents.'}
+            message={getRequestError(error)?.message || 'Failed to load residents.'}
             onRetry={refetch}
           />
         )}
         {isApprovedError && (
           <ErrorBanner
-            message={(approvedError as any)?.message || 'Failed to load approved bookings.'}
+            message={getRequestError(approvedError)?.message || 'Failed to load approved bookings.'}
             onRetry={refetchApproved}
           />
         )}
@@ -291,8 +294,8 @@ export default function ResidentsPage() {
                   </thead>
                   <tbody className="divide-y divide-slate-100 text-xs font-medium">
                     {filteredResidents.map((b, idx) => {
-                      const student = b.studentId || (b as any).student;
-                      const room = b.roomId || (b as any).room;
+                      const student = b.studentId || b.student;
+                      const room = b.roomId || b.room;
                       const initials = student?.name
                         ? student.name.split(' ').map((n) => n[0]).join('').slice(0, 2).toUpperCase()
                         : 'ST';
@@ -545,8 +548,8 @@ export default function ResidentsPage() {
         variant="fullScreenMobile"
       >
         {selectedBooking && (() => {
-          const student = selectedBooking.studentId || (selectedBooking as any).student;
-          const room = selectedBooking.roomId || (selectedBooking as any).room;
+          const student = selectedBooking.studentId || selectedBooking.student;
+          const room = selectedBooking.roomId || selectedBooking.room;
           const studentName = student?.name || 'Resident';
           return (
             <div className="space-y-4 text-xs">
@@ -741,8 +744,8 @@ export default function ResidentsPage() {
         maxWidth="lg"
       >
         {checkInTarget && (() => {
-          const student = checkInTarget.studentId || (checkInTarget as any).student;
-          const room = checkInTarget.roomId || (checkInTarget as any).room;
+          const student = checkInTarget.studentId || checkInTarget.student;
+          const room = checkInTarget.roomId || checkInTarget.room;
           const studentName = student?.name || 'Student';
           const hasIncompleteIdentity = !checkInTarget.cnicFrontUrl || !checkInTarget.cnicBackUrl;
 
@@ -985,8 +988,8 @@ export default function ResidentsPage() {
         description="Check out this resident? This will end their active residency and release the allocated bed."
       >
         {checkoutTarget && (() => {
-          const student = checkoutTarget.studentId || (checkoutTarget as any).student;
-          const room = checkoutTarget.roomId || (checkoutTarget as any).room;
+          const student = checkoutTarget.studentId || checkoutTarget.student;
+          const room = checkoutTarget.roomId || checkoutTarget.room;
           return (
             <div className="space-y-4 text-xs">
               <div className="p-3.5 bg-amber-50 rounded-xl border border-amber-200/80 flex items-start gap-2.5 text-amber-900">

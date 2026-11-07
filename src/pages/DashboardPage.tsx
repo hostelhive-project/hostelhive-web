@@ -1,3 +1,5 @@
+import type { DashboardRecentActivity } from '../types/api';
+import { getRequestError } from '../utils/requestError';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
@@ -25,21 +27,21 @@ import {
   useGetRecentActivityQuery,
 } from '../features/api/dashboardApi';
 
-const getResidentName = (studentId: any) => {
+const getResidentName = (studentId: DashboardRecentActivity['recentBookings'][number]['studentId']) => {
   if (studentId && typeof studentId === 'object' && studentId.name) {
     return studentId.name;
   }
   return 'Unknown Resident';
 };
 
-const getRoomDisplay = (roomId: any) => {
+const getRoomDisplay = (roomId: DashboardRecentActivity['recentBookings'][number]['roomId']) => {
   if (roomId && typeof roomId === 'object' && roomId.roomNumber) {
     return `Room ${roomId.roomNumber}`;
   }
   return 'Room unavailable';
 };
 
-const getResidentCode = (b: any) => {
+const getResidentCode = (b: DashboardRecentActivity['recentBookings'][number]) => {
   if (b.residentCode) return b.residentCode;
   if (b.studentId && typeof b.studentId === 'object' && b.studentId.residentCode) {
     return b.studentId.residentCode;
@@ -169,7 +171,7 @@ export default function DashboardPage() {
 
       {isSummaryError && (
         <ErrorBanner
-          message={(summaryError as any)?.message || 'Failed to load dashboard statistics.'}
+          message={getRequestError(summaryError)?.message || 'Failed to load dashboard statistics.'}
           onRetry={refetchSummary}
         />
       )}

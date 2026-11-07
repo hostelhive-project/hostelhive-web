@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 import { useState, useMemo } from 'react';
 import type { FormEvent } from 'react';
 import { 
@@ -75,7 +76,7 @@ export default function RentLedgerPage() {
 
   const selectedRent = useMemo(() => {
     if (!selectedBooking) return null;
-    const room = selectedBooking.roomId || (selectedBooking as any).room;
+    const room = selectedBooking.roomId || selectedBooking.room;
     return selectedBooking.monthlyRent ?? room?.monthlyRent ?? null;
   }, [selectedBooking]);
 
@@ -129,7 +130,8 @@ export default function RentLedgerPage() {
     try {
       await markPaidMutation(invoiceId).unwrap();
       addToast('success', 'Invoice status updated to Paid.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to settle invoice.');
     }
   };
@@ -144,7 +146,8 @@ export default function RentLedgerPage() {
         'success',
         `Generated ${count} invoice${count === 1 ? '' : 's'} for cycle ${bulkBillingMonth}.`
       );
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to generate bulk invoices.');
     }
   };
@@ -163,7 +166,8 @@ export default function RentLedgerPage() {
       setShowSingleModal(false);
       setSelectedBookingId('');
       addToast('success', `Invoice generated successfully for ${currentMonthStr}.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       const msg = err?.data?.message || err?.message || 'Failed to generate invoice.';
       addToast('error', msg);
     }
@@ -291,7 +295,7 @@ export default function RentLedgerPage() {
 
       {isError && (
         <ErrorBanner
-          message={(error as any)?.message || 'Failed to load rent invoices.'}
+          message={getRequestError(error)?.message || 'Failed to load rent invoices.'}
           onRetry={refetch}
         />
       )}
@@ -313,7 +317,7 @@ export default function RentLedgerPage() {
           <span className="text-xs font-semibold text-slate-500">Status:</span>
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
             className="px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
           >
             <option value="ALL">All Invoices</option>
@@ -513,8 +517,8 @@ export default function RentLedgerPage() {
             >
               <option value="">Select a resident booking...</option>
               {residents.map((r) => {
-                const student = r.studentId || (r as any).student;
-                const room = r.roomId || (r as any).room;
+                const student = r.studentId || r.student;
+                const room = r.roomId || r.room;
                 return (
                   <option key={r._id} value={r._id}>
                     {student?.name || 'Resident'} - Room {room?.roomNumber || '—'}

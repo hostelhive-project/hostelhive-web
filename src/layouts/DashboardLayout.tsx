@@ -49,6 +49,12 @@ export default function DashboardLayout() {
   const [setupNoticeVisible, setSetupNoticeVisible] = useState(() => localStorage.getItem('hh-setup-notice-dismissed') !== 'true');
   const navigate = useNavigate();
   const location = useLocation();
+  const [menuPath, setMenuPath] = useState(location.pathname);
+  if (menuPath !== location.pathname) {
+    setMenuPath(location.pathname);
+    setMobileMenuOpen(false);
+    setAccountMenuOpen(false);
+  }
   const dispatch = useAppDispatch();
   const user = useAppSelector((state) => state.auth.user);
   const hasHostel = Boolean(user?.hostelId);
@@ -107,11 +113,6 @@ export default function DashboardLayout() {
       if (previouslyFocused?.isConnected) window.requestAnimationFrame(() => previouslyFocused.focus());
     };
   }, [mobileMenuOpen]);
-
-  useEffect(() => {
-    setMobileMenuOpen(false);
-    setAccountMenuOpen(false);
-  }, [location.pathname]);
 
   useEffect(() => {
     if (!mobileMenuOpen) return undefined;

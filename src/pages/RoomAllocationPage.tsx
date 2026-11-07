@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 import { useState, useMemo, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { 
@@ -141,7 +142,8 @@ export default function RoomAllocationPage() {
       setCapacity(2);
       setMonthlyRent('');
       addToast('success', `Room ${roomNumber} created successfully!`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to create room.');
     }
   };
@@ -156,7 +158,8 @@ export default function RoomAllocationPage() {
       }).unwrap();
       setActiveMenuRoomId(null);
       addToast('info', `Room ${room.roomNumber} ${room.isLocked ? 'unlocked' : 'locked'}.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to update room.');
     } finally { setRoomBusy(room._id, false); }
   };
@@ -168,7 +171,8 @@ export default function RoomAllocationPage() {
       await deleteRoomMutation(id).unwrap();
       setActiveMenuRoomId(null);
       addToast('info', `Room ${roomNum} deleted.`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to delete room.');
     } finally { setRoomBusy(id, false); setRoomToDelete(null); }
   };
@@ -177,7 +181,8 @@ export default function RoomAllocationPage() {
     try {
       await approveBookingMutation(bookingId).unwrap();
       addToast('success', 'Booking approved and resident allocated to room.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to approve booking.');
     }
   };
@@ -195,7 +200,8 @@ export default function RoomAllocationPage() {
       setSelectedBookingId(null);
       setRejectionReason('');
       addToast('info', 'Booking request rejected.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to reject booking.');
     }
   };
@@ -291,7 +297,7 @@ export default function RoomAllocationPage() {
 
       {isRoomsError && (
         <ErrorBanner
-          message={(roomsError as any)?.message || 'Failed to load rooms.'}
+          message={getRequestError(roomsError)?.message || 'Failed to load rooms.'}
           onRetry={refetchRooms}
         />
       )}
@@ -317,7 +323,7 @@ export default function RoomAllocationPage() {
               </span>
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
+                onChange={(e) => setStatusFilter(e.target.value as typeof statusFilter)}
                 className="px-3 py-2 text-xs font-semibold bg-white border border-slate-200 rounded-xl text-slate-700 focus:outline-none shadow-2xs cursor-pointer"
               >
                 <option value="ALL">All Statuses</option>

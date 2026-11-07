@@ -1,15 +1,15 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useEffectEvent, useRef } from 'react';
 import type { ReactNode } from 'react';
 
 export function ActionMenu({ children, className, id, triggerId, onClose }: { children: ReactNode; className?: string; id: string; triggerId: string; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
-  const close = useRef(onClose); close.current = onClose;
+  const close = useEffectEvent(onClose);
   useEffect(() => {
     const element = ref.current;
     const controls = () => Array.from(element?.querySelectorAll<HTMLElement>('button:not([disabled]), a[href]') || []);
     controls().forEach((item) => item.setAttribute('role', 'menuitem'));
     controls()[0]?.focus();
-    const outside = (event: PointerEvent) => { if (!element?.contains(event.target as Node) && !document.getElementById(triggerId)?.contains(event.target as Node)) close.current(); };
+    const outside = (event: PointerEvent) => { if (!element?.contains(event.target as Node) && !document.getElementById(triggerId)?.contains(event.target as Node)) close(); };
     document.addEventListener('pointerdown', outside);
     return () => { document.removeEventListener('pointerdown', outside); document.getElementById(triggerId)?.focus(); };
   }, [triggerId]);

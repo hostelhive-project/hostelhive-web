@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { getRequestError } from '../utils/requestError';
+import { useState, useRef } from 'react';
 import type { FormEvent, ChangeEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { 
@@ -68,13 +69,15 @@ export default function AdminProfilePage() {
   const [adminEmail, setAdminEmail] = useState(effectiveUser?.email || '');
   const [adminPhone, setAdminPhone] = useState(effectiveUser?.phone || '+92 300 1234567');
 
-  useEffect(() => {
+  const [profileSource, setProfileSource] = useState(effectiveUser);
+  if (profileSource !== effectiveUser) {
+    setProfileSource(effectiveUser);
     if (effectiveUser) {
       if (effectiveUser.name) setAdminName(effectiveUser.name);
       if (effectiveUser.email) setAdminEmail(effectiveUser.email);
       if (effectiveUser.phone) setAdminPhone(effectiveUser.phone);
     }
-  }, [effectiveUser]);
+  }
 
   // Edit Modal State
   const [showEditModal, setShowEditModal] = useState(false);
@@ -137,7 +140,8 @@ export default function AdminProfilePage() {
       dispatch(updateCurrentUser({ name: updated.name, phone: updated.phone }));
       setShowEditModal(false);
       addToast('success', 'Administrator profile details updated successfully.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to update profile.');
     }
   };
@@ -183,8 +187,8 @@ export default function AdminProfilePage() {
       const newImageUrl = updatedUser.profileImageUrl || uploadRes.url;
       dispatch(updateCurrentUser({ profileImageUrl: newImageUrl }));
       addToast('success', 'Profile photo updated successfully.');
-    } catch (err: any) {
-      // eslint-disable-next-line no-console
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       console.error('[PROFILE PHOTO UPLOAD ERROR]', err);
       addToast(
         'error',
@@ -250,7 +254,7 @@ export default function AdminProfilePage() {
 
       {isUserError && (
         <ErrorBanner
-          message={(userFetchError as any)?.message || 'Failed to load user profile.'}
+          message={getRequestError(userFetchError)?.message || 'Failed to load user profile.'}
           onRetry={refetchUser}
         />
       )}

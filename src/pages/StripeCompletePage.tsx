@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 /**
  * StripeCompletePage — /admin/stripe/complete
  *
@@ -69,7 +70,8 @@ export default function StripeCompletePage() {
       } else {
         setOnboardError('No onboarding URL returned. Please retry.');
       }
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       setOnboardError(
         err?.data?.message || err?.message || 'Failed to generate continuation link.'
       );
@@ -116,9 +118,9 @@ export default function StripeCompletePage() {
             <h1 className="text-lg font-bold text-[#0b1329]">Verification Issue</h1>
             <p className="text-xs text-slate-500 leading-relaxed">
               We couldn't retrieve your Stripe status right now.
-              {(error as any)?.data?.message && (
+              {getRequestError(error)?.data?.message && (
                 <span className="block mt-1 text-rose-600 font-medium">
-                  {(error as any).data.message}
+                  {getRequestError(error).data?.message}
                 </span>
               )}
             </p>

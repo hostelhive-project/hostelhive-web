@@ -1,3 +1,4 @@
+import { getRequestError } from '../utils/requestError';
 import { useState, useMemo, useRef } from 'react';
 import type { FormEvent } from 'react';
 import { 
@@ -28,6 +29,13 @@ import {
 import { useListStaffForHostelQuery } from '../features/api/userApi';
 import { useLazyVerifyRecordQuery } from '../features/api/blockchainApi';
 import type { Complaint, ComplaintStatus, SeverityTier, BlockchainVerifyResponse } from '../types/api';
+
+const severityWeights: Record<SeverityTier, number> = {
+  Critical: 4,
+  High: 3,
+  Medium: 2,
+  Low: 1,
+};
 
 export default function ComplaintDeskPage() {
   const user = useAppSelector((state) => state.auth.user);
@@ -69,13 +77,6 @@ export default function ComplaintDeskPage() {
 
   const removeToast = (id: string) => {
     setToasts((prev) => prev.filter((t) => t.id !== id));
-  };
-
-  const severityWeights: Record<SeverityTier, number> = {
-    Critical: 4,
-    High: 3,
-    Medium: 2,
-    Low: 1,
   };
 
   // Filtered & Sorted complaints
@@ -122,7 +123,8 @@ export default function ComplaintDeskPage() {
         ? 'Awaiting Admin Verification'
         : newStatus;
       addToast('success', `Complaint marked as "${statusLabel}".`);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to update complaint status.');
     } finally { statusRef.current.delete(id); setPendingStatuses([...statusRef.current]); setResolutionTarget(null); }
   };
@@ -139,7 +141,8 @@ export default function ComplaintDeskPage() {
       setAssignModalComplaint(null);
       setSelectedStaffId('');
       addToast('success', 'Staff assigned to complaint.');
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Failed to assign staff.');
     }
   };
@@ -151,7 +154,8 @@ export default function ComplaintDeskPage() {
         sourceId: complaintId,
       }).unwrap();
       setBlockchainModalData(res);
-    } catch (err: any) {
+    } catch (caughtError: unknown) {
+      const err = getRequestError(caughtError);
       addToast('error', err?.data?.message || err?.message || 'Blockchain record verification not yet anchored.');
     }
   };
@@ -221,7 +225,7 @@ export default function ComplaintDeskPage() {
 
       {isError && (
         <ErrorBanner
-          message={(error as any)?.message || 'Failed to load complaints.'}
+          message={getRequestError(error)?.message || 'Failed to load complaints.'}
           onRetry={refetch}
         />
       )}
@@ -299,7 +303,7 @@ export default function ComplaintDeskPage() {
             <span>Sort:</span>
             <select
               value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as any)}
+              onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
               className="bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-semibold text-slate-800 shadow-2xs cursor-pointer focus:outline-none"
             >
               <option value="newest">Newest First</option>

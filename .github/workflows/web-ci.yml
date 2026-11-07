@@ -1,0 +1,46 @@
+name: Web CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: web-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  web-checks:
+    name: Web checks
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    env:
+      CI: 'true'
+      # Build validation only; this artifact is not deployed. Vercel builds
+      # separately using its Production/Preview API URL environment setting.
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || 'https://ci-api.invalid/api' }}
+    steps:
+      - name: Check out this commit
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22.22.0'
+          cache: npm
+          cache-dependency-path: package-lock.json
+      - name: Install locked dependencies
+        run: npm ci --include=dev --no-audit --no-fund
+      - name: Lint web source
+        run: npm run lint
+      - name: TypeScript and production build
+        run: npm run build
+
+# CD uses Vercel's connected GitHub integration. Add "Web checks" as a required
+# Deployment Check in Vercel. vercel.json also runs lint before every build.

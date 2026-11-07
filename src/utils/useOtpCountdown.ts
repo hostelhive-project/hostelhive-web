@@ -12,24 +12,20 @@ export function useOtpCountdown(expiresAt: number | null): number {
   const [secondsRemaining, setSecondsRemaining] = useState(0);
 
   useEffect(() => {
-    if (expiresAt === null) {
-      setSecondsRemaining(0);
-      return;
-    }
-
-    let intervalId: ReturnType<typeof setInterval> | undefined;
+    if (expiresAt === null) return;
     const updateCountdown = () => {
       const remaining = Math.max(0, Math.ceil((expiresAt - Date.now()) / 1000));
       setSecondsRemaining(remaining);
       if (remaining === 0 && intervalId) clearInterval(intervalId);
     };
 
-    intervalId = setInterval(updateCountdown, 1000);
-    updateCountdown();
+    const intervalId = setInterval(updateCountdown, 1000);
+    const initialUpdate = setTimeout(updateCountdown, 0);
     return () => {
-      if (intervalId) clearInterval(intervalId);
+      clearTimeout(initialUpdate);
+      clearInterval(intervalId);
     };
   }, [expiresAt]);
 
-  return secondsRemaining;
+  return expiresAt === null ? 0 : secondsRemaining;
 }

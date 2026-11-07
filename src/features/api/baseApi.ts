@@ -70,7 +70,7 @@ function unwrapResponse(data: unknown): unknown {
 
 async function sendRequest(args: AxiosBaseQueryArgs, tokenOverride?: string | null) {
   const token = tokenOverride === undefined ? getAuthStorage()?.getItem('token') : tokenOverride;
-  const headersToSend: Record<string, any> = {
+  const headersToSend: Record<string, unknown> = {
     ...(token ? { Authorization: `Bearer ${token}` } : {}),
     ...(args.headers as Record<string, unknown> | undefined),
   };
